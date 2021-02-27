@@ -27,7 +27,7 @@ user_id = sp.current_user()["id"]
 
 # IF PLAYLIST NOT CREATED, UNCOMMENT
 # # -------- Create Playlist ----------
-# # Comment this section if needed
+# Comment this section if needed
 # playlist_name = f"Damnation {YEAR} playlist"
 # playlist_description = f"Created with Python"
 # playlist = sp.user_playlist_create(user_id,
@@ -106,14 +106,9 @@ if len_tracks > 100:
     for i in range(len(counts)-1):
         add_tracks = tracks[counts[i]:counts[i+1]]
         result = sp.playlist_add_items(playlist_id=playlist_id, items=add_tracks)
-        print("Playlist compiled!")
 elif len_tracks == 0:
     print("Error: no new tracks")
 else:
     result = sp.playlist_add_items(playlist_id=playlist_id, items=tracks)
-    print("Playlist compiled!")
 
-
-
-
-
+print("Playlist compiled!")
