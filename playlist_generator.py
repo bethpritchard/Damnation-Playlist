@@ -10,35 +10,39 @@ YEAR = 2021
 LINEUP_URL = "https://www.damnationfestival.co.uk/lineup"
 
 # ------------- SET UP -----------
-client_id = os.environ.get("CLIENT_ID")
-client_secret = os.environ.get("CLIENT_SECRET")
+CLIENT_ID = os.environ.get("CLIENT_ID")  # CHANGE THESE TO YOUR OWN
+CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
+# PLAYLIST_ID = os.environ.get("PLAYLIST_ID") #UNCOMMENT WHEN YOU HAVE STORED YOUR PLAYLIST VARIABLE
 
 sp = spotipy.Spotify(
     auth_manager=SpotifyOAuth(
         scope="playlist-modify-private playlist-modify-public",
         redirect_uri="http://example.com",
-        client_id=client_id,
-        client_secret=client_secret,
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET,
         show_dialog=True,
         cache_path="token.txt"
     )
 )
 user_id = sp.current_user()["id"]
 
-# IF PLAYLIST NOT CREATED, UNCOMMENT
 # # -------- Create Playlist ----------
-# Comment this section if needed
-# playlist_name = f"Damnation {YEAR} playlist"
-# playlist_description = f"Created with Python"
-# playlist = sp.user_playlist_create(user_id,
-#                                    playlist_name,
-#                                    public=True,
-#                                    description=playlist_description)
-# playlist_id = playlist["id"]
-# print(playlist_id)
+# COMMENT THIS SECTION OUT IF YOU ALREADY HAVE A PLAYLIST
+
+playlist_name = f"Damnation {YEAR} playlist"
+playlist_description = f"Created with Python"
+
+
+
+playlist = sp.user_playlist_create(user_id,
+                                   playlist_name,
+                                   public=True,
+                                   description=playlist_description)
+playlist_id = playlist["id"]
+print(playlist_id)
 
 # # IMPORTANT: store playlist ID as 'playlist_id' for future use
-playlist_id = os.environ.get("PLAYLIST_ID")
+
 
 # --------------- Scrape website -----------------
 
@@ -49,7 +53,6 @@ soup = BeautifulSoup(lineup_site, "html.parser")
 bands_html = soup.find_all(name='div', class_="image-slide-title")
 bands = [band.text for band in bands_html]
 bands.append("Electric Wizard")
-
 
 # Hacky fix for Bell Witch & Aerial Ruin
 for band in bands:
@@ -99,12 +102,12 @@ for uri in band_uris:
 # Hacky fix to get around 100 track max
 len_tracks = len(tracks)
 max_tracks = 100
-counts = list(range(0,len_tracks,100))
-counts.append(len_tracks+1)
+counts = list(range(0, len_tracks, 100))
+counts.append(len_tracks + 1)
 
 if len_tracks > 100:
-    for i in range(len(counts)-1):
-        add_tracks = tracks[counts[i]:counts[i+1]]
+    for i in range(len(counts) - 1):
+        add_tracks = tracks[counts[i]:counts[i + 1]]
         result = sp.playlist_add_items(playlist_id=playlist_id, items=add_tracks)
 elif len_tracks == 0:
     print("Error: no new tracks")
