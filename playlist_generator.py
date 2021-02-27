@@ -27,7 +27,7 @@ sp = spotipy.Spotify(
 user_id = sp.current_user()["id"]
 
 # # -------- Create Playlist ----------
-# COMMENT THIS SECTION OUT IF YOU ALREADY HAVE A PLAYLIST
+# # COMMENT THIS SECTION OUT IF YOU ALREADY HAVE A PLAYLIST
 
 playlist_name = f"Damnation {YEAR} playlist"
 playlist_description = f"Created with Python"
@@ -41,7 +41,7 @@ playlist = sp.user_playlist_create(user_id,
 playlist_id = playlist["id"]
 print(playlist_id)
 
-# # IMPORTANT: store playlist ID as 'playlist_id' for future use
+# IMPORTANT: store playlist ID as 'playlist_id' for future use
 
 
 # --------------- Scrape website -----------------
@@ -50,55 +50,98 @@ response = requests.get(LINEUP_URL)
 lineup_site = response.text
 soup = BeautifulSoup(lineup_site, "html.parser")
 
-bands_html = soup.find_all(name='div', class_="image-slide-title")
-bands = [band.text for band in bands_html]
-bands.append("Electric Wizard")
 
-# Hacky fix for Bell Witch & Aerial Ruin
-for band in bands:
-    if "&" in band:
-        bands.remove(band)
-        split_band = band.split("&")
-        for new_band in split_band:
-            bands.append(new_band.strip())
+scraped_links = soup.find_all(name='a', class_="image-slide-anchor content-fill", href =True)
 
-# ------------- Store current lineup ------------
-# Compares list of scraped bands to the current list
+scraped_urls = [band['href'] for band in scraped_links]
+band_urls = []
+for band in scraped_urls:
+    band_urls.append(band.split("?")[0])
+
 
 new_bands = []
 with open("lineup.txt", "a+") as fp:
     fp.seek(0)
     lineup_file = fp.readlines()
-    current_lineup = [band.replace("\n", " ").strip() for band in lineup_file]
+    current_list = [band.replace("\n", " ").strip() for band in lineup_file]
 
-    for band in sorted(bands):
-        if band not in current_lineup:
+    for band in scraped_urls:
+        if band not in current_list:
             new_bands.append(band)
             fp.write(band + "\n")
 
-# --------- Get Band Uris --------------
-#
-band_uris = []
+
+#Fix for Bell Witch
+new_albums = []
 for band in new_bands:
-    result = sp.search(f"artist: {band}", type="artist")
+    if "album" in band:
+        new_bands.remove(band)
+        new_albums.append(band)
 
-    try:
-        uri = result['artists']['items'][0]['uri']
-        band_uris.append(uri)
-    except IndexError:
-        print(f"Error: {band} does not exist on Spotify")
 
-# ---------- Get Top Tracks ------------
+
+# bands_html = soup.find_all(name='div', class_="image-slide-title")
+# bands = [band.text for band in bands_html]
+# bands.append("Electric Wizard")
+
+
+# # Hacky fix for Bell Witch & Aerial Ruin
+# for band in bands:
+#     if "&" in band:
+#         bands.remove(band)
+#         split_band = band.split("&")
+#         for new_band in split_band:
+#             bands.append(new_band.strip())
+#
+# # ------------- Store current lineup ------------
+# # Compares list of scraped bands to the current list
+#
+# new_bands = []
+# with open("lineup.txt", "a+") as fp:
+#     fp.seek(0)
+#     lineup_file = fp.readlines()
+#     current_lineup = [band.replace("\n", " ").strip() for band in lineup_file]
+#
+#     for band in band_urls:
+#         if band not in current_lineup:
+#             new_bands.append(band)
+#             fp.write(band + "\n")
+
+# # --------- Get Band Uris --------------
+# # #
+# band_uris = []
+# for band in new_bands:
+#     result = sp.search(f"artist: {band}", type="artist")
+#
+#     try:
+#         uri = result['artists']['items'][0]['uri']
+#         band_uris.append(uri)
+#     except IndexError:
+#         print(f"Error: {band} does not exist on Spotify")
+#
+# # ---------- Get Top Tracks ------------
+
+
+
 
 tracks = []
 
-for uri in band_uris:
+for uri in new_bands:
     results = sp.artist_top_tracks(uri)
     for track in results['tracks'][:10]:
         tracks.append(track['uri'])
 
-# --------- Add tracks to playlist
 
+for album in new_albums:
+    results = sp.album_tracks(album)
+    for track in results['items'][:]:
+        tracks.append(track['uri'])
+
+
+
+
+# # --------- Add tracks to playlist
+#
 # Hacky fix to get around 100 track max
 len_tracks = len(tracks)
 max_tracks = 100
