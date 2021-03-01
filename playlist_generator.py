@@ -11,7 +11,7 @@ LINEUP_URL = "https://www.damnationfestival.co.uk/lineup"
 # ------------- SET UP -----------
 CLIENT_ID = os.environ.get("CLIENT_ID")  # CHANGE THESE TO YOUR OWN
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
-PLAYLIST_ID = os.environ.get("PLAYLIST_ID")  # UNCOMMENT WHEN YOU HAVE STORED YOUR PLAYLIST VARIABLE
+playlist_id = "5rwVvahN41qAu6Ws1wJfhe"  # UNCOMMENT WHEN YOU HAVE STORED YOUR PLAYLIST VARIABLE
 
 sp = spotipy.Spotify(
     auth_manager=SpotifyOAuth(
